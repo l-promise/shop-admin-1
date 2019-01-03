@@ -8,6 +8,7 @@ import VueRouter from 'vue-router'
 // 导入组件：
 import Login from '@/components/login/Login'
 import Home from '@/components/home/Home'
+import Users from '@/components/users/Users'
 
 // 安装插件
 Vue.use(VueRouter)
@@ -19,7 +20,18 @@ const router = new VueRouter({
     {
       path: '/home',
       component: Home,
-      name: 'home'
+      name: 'home',
+
+      // 子路由：
+      children: [
+        // 如果子路由的path带有 / ，那么，哈希值就是：/users
+        // 如果子路由的path没有 / ，那么，哈希值就是：/home/users
+        {
+          // path: '/users',
+          path: '/users',
+          component: Users
+        }
+      ]
     }
   ]
 })

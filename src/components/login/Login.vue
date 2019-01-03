@@ -21,26 +21,38 @@
       el-button 按钮组件
         type="primary" 设置按钮的样式类型
     -->
-    <el-form
-      :model="loginForm"
-      :rules="rules"
-      ref="loginForm"
-      label-width="100px"
-      class="demo-loginForm"
-      label-position="top"
-    >
-      <el-form-item label="用户名" prop="username">
-        <el-input v-model="loginForm.username"></el-input>
-      </el-form-item>
-      <el-form-item label="密码" prop="password">
-        <el-input v-model="loginForm.password"></el-input>
-      </el-form-item>
+    <!--
+      el-row 表示每一行
+        type="flex" 启动flex布局
+        justify="center" 用来设置主轴对其方式
 
-      <el-form-item>
-        <el-button type="primary" @click="submitForm('loginForm')">登录</el-button>
-        <el-button @click="resetForm('loginForm')">重置</el-button>
-      </el-form-item>
-    </el-form>
+      el-col 表示每一列
+        :span="6" 栅格占据的列数，默认值为 24 ，也就是说没有指定 span 属性，表示沾满整行
+    -->
+    <el-row type="flex" justify="center" align="middle" class="login-row">
+      <el-col :xs="14" :sm="12" :md="10" :lg="8" :xl="6">
+        <el-form
+          :model="loginForm"
+          :rules="rules"
+          ref="loginForm"
+          label-width="100px"
+          class="login-form"
+          label-position="top"
+        >
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="loginForm.username"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="loginForm.password" type="password"></el-input>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" @click="submitForm('loginForm')">登录</el-button>
+            <el-button @click="resetForm('loginForm')">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-col>
+    </el-row>
 
     <!-- <button ref="myBtn">按钮</button> -->
   </div>
@@ -148,4 +160,19 @@ export default {
 </script>
 
 <style>
+.login {
+  height: 100%;
+  background-color: #2d434c;
+}
+
+.login-row {
+  height: 100%;
+}
+
+.login-form {
+  min-width: 380px;
+  padding: 30px 20px;
+  border-radius: 10px;
+  background-color: #fff;
+}
 </style>
