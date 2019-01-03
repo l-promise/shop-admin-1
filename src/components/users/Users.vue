@@ -63,41 +63,42 @@ export default {
 
   methods: {
     // 分页获取数据
-    getUserList (pagenum = 1) {
-      axios
-        .get('http://localhost:8888/api/private/v1/users', {
-          params: {
-            // 查询条件
-            query: '',
-            // 当前页
-            pagenum,
-            // 每页大小
-            pagesize: 3
-          },
-          // 通过请求头，传递token
-          headers: {
-            Authorization: localStorage.getItem('token')
-          }
-        })
-        .then(res => {
-          console.log('用户列表数据：', res)
-          if (res.data.meta.status === 200) {
-            // 获取数据成功
-            this.userList = res.data.data.users
-            // 设置总条数：
-            this.total = res.data.data.total
-            // 设置当前页
-            this.pagenum = res.data.data.pagenum
-          } else {
-            // 失败
-            // token失效
+    async getUserList (pagenum = 1) {
+      const url = 'http://localhost:8888/api/private/v1/users'
+      const options = {
+        params: {
+          // 查询条件
+          query: '',
+          // 当前页
+          pagenum,
+          // 每页大小
+          pagesize: 3
+        },
+        // 通过请求头，传递token
+        headers: {
+          Authorization: localStorage.getItem('token')
+        }
+      }
 
-            // 跳回到登录页面
-            this.$router.push('/login')
-            // 清除token
-            localStorage.removeItem('token')
-          }
-        })
+      // 使用 await 等待Promise结果
+      const res = await axios.get(url, options)
+      console.log('用户列表数据：', res)
+      if (res.data.meta.status === 200) {
+        // 获取数据成功
+        this.userList = res.data.data.users
+        // 设置总条数：
+        this.total = res.data.data.total
+        // 设置当前页
+        this.pagenum = res.data.data.pagenum
+      } else {
+        // 失败
+        // token失效
+
+        // 跳回到登录页面
+        this.$router.push('/login')
+        // 清除token
+        localStorage.removeItem('token')
+      }
     },
 
     // 切换分页，获取当前页数据

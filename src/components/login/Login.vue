@@ -102,55 +102,63 @@ export default {
   },
   methods: {
     // 表单提交的代码逻辑
-    submitForm (formName) {
-      // this.$refs[formName] 就是在访问对象 $refs 中的属性
-      // this.$refs.loginForm 通过 .语法来访问对象属性，与上面通过 [] 访问对象属性是相同的
-      // $refs 是Vue提供的一个对象，作用：用来获取页面中所有带有 ref 属性的元素（DOM或组件）
-      // 为什么要获取到DOM对象或组件对象？？？
-      //  因为在 Vue 中有些情况下，需要手动操作DOM，此时，可以通过 ref 来获取到DOM对象，然后，再进行DOM操作
-      //  如果给组件添加了 ref 属性，那么，可以通过 ref 来获取到组件对象
-      // 在当前案例中，就是通过 $refs.loginForm 来获取到表单组件，调用组件中的 validate 方法，来进行表单验证
-      // console.log(this.$refs)
-      // this.$refs.myBtn.style.color = 'red'
+    async submitForm (formName) {
+      // validate() 如果不传递回调函数，则返回一个Promise对象
+      // 如果表单验证成功，则 valid 值为：true
+      // 如果表单验证失败，则会执行 catch 中的代码，并且错误对象 e 值为：false
+      /* try {
+        const valid = await this.$refs[formName].validate()
 
-      // 通过 $refs 获取到组件对象，并且调用组件的 validate 方法，进行表单验证
-      this.$refs[formName].validate(valid => {
-        // valid 形参表示：表单验证是否成功
+        // 如果表单验证失败，那么，后面的代码不会继续执行
+        console.log('成功：', valid)
+      } catch (e) {
+        console.log('表单验证失败了', e)
+      } */
+
+      try {
+        // 表单验证
+        await this.$refs[formName].validate()
+
+        // 表单验证成功后，发送请求，完成登录功能
+        const res = await axios.post(
+          'http://localhost:8888/api/private/v1/login',
+          this.loginForm
+        )
+
+        if (res.data.meta.status === 200) {
+          localStorage.setItem('token', res.data.data.token)
+          this.$router.push({ name: 'home' })
+        } else {
+          this.$message({
+            message: res.data.meta.msg,
+            type: 'error',
+            duration: 1000
+          })
+        }
+      } catch (e) {}
+
+      /* this.$refs[formName].validate(async valid => {
         if (!valid) {
-          // 验证失败的时候，代码中不需要任何处理，因为，错误信息都已经在页面中展示给用户了
           return false
         }
 
         // 表单验证成功
-        // console.log('成功')
-        // 1 获取到用户名和密码
-        // console.log(this.loginForm)
-        // 2 调用 登录接口 完成登录
-        //  登录接口地址：http://localhost:8888/api/private/v1/login
-        axios
-          .post('http://localhost:8888/api/private/v1/login', this.loginForm)
-          .then(res => {
-            console.log(res)
-            if (res.data.meta.status === 200) {
-              // 将 token 存储到localStorage中
-              // 注意：先存储token，再跳转路由
-              localStorage.setItem('token', res.data.data.token)
+        const res = await axios.post(
+          'http://localhost:8888/api/private/v1/login',
+          this.loginForm
+        )
 
-              // 登录成功
-              // 3 成功后，才跳转到首页
-              // this.$router.push('/home')
-              this.$router.push({ name: 'home' })
-            } else {
-              // 4 登录失败，提示用户错误信息
-              // alert(res.data.meta.msg)
-              this.$message({
-                message: res.data.meta.msg,
-                type: 'error',
-                duration: 1000
-              })
-            }
+        if (res.data.meta.status === 200) {
+          localStorage.setItem('token', res.data.data.token)
+          this.$router.push({ name: 'home' })
+        } else {
+          this.$message({
+            message: res.data.meta.msg,
+            type: 'error',
+            duration: 1000
           })
-      })
+        }
+      }) */
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()
