@@ -1,0 +1,183 @@
+<div class="users">
+  <!--
+      面包屑导航
+
+        separator-class="el-icon-arrow-right" 设置两个导航之间的间隔样式图标 >
+    -->
+  <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+    <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
+    <el-breadcrumb-item>用户管理</el-breadcrumb-item>
+    <el-breadcrumb-item>用户列表</el-breadcrumb-item>
+  </el-breadcrumb>
+
+  <!--
+      查询和添加 布局
+
+      el-row
+        :gutter="20" 设置两列之间的间隔
+    -->
+  <el-row :gutter="20">
+    <el-col :span="8">
+      <el-input
+        placeholder="请输入搜索内容"
+        v-model="searchText"
+        class="input-with-select"
+      >
+        <el-button
+          slot="append"
+          icon="el-icon-search"
+          @click="search"
+        ></el-button>
+      </el-input>
+    </el-col>
+    <el-col :span="4">
+      <el-button type="success" plain @click="showUserAddDialog"
+        >添加用户</el-button
+      >
+    </el-col>
+  </el-row>
+
+  <!--
+      表格组件：
+        :data="tableData" 指定表格的数据源
+        stripe 启用斑马纹（隔行变色效果）
+
+      el-table-column 表格列组件
+        prop="date" 对应列内容的字段名，也就是数据源中的属性名
+        label="日期" 列标题名称
+          如果列没有直接展示数据源中的数据，就可以不用传递prop属性
+        width="180" 列宽度
+    -->
+  <el-table :data="userList" stripe style="width: 100%">
+    <el-table-column prop="username" label="姓名" width="180"></el-table-column>
+    <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
+    <el-table-column prop="mobile" label="电话" width="180"></el-table-column>
+    <el-table-column label="用户状态">
+      <template slot-scope="scope">
+        <!--
+            开关组件：
+              v-model 用来实现数据双向绑定的
+              scope.row 表示当前行数据
+              mg_state 就是当前用户的状态
+          -->
+        <el-switch
+          v-model="scope.row.mg_state"
+          @change="changeUserState(scope.row)"
+        ></el-switch>
+      </template>
+    </el-table-column>
+    <el-table-column label="操作">
+      <!-- 这是 Vue 中的作用域插槽，可以通过 scope.row 来获取到当前行的数据 -->
+      <template slot-scope="scope">
+        <!--
+            size="mini" 按钮的大小
+            type="primary" 按钮的样式
+            plain 是否朴素按钮（空心，镂空）
+            icon="el-icon-edit" 按钮的图标
+          -->
+        <el-button
+          size="mini"
+          type="primary"
+          plain
+          icon="el-icon-edit"
+          @click="showUserEditDialog(scope.row)"
+        ></el-button>
+        <el-button
+          size="mini"
+          type="danger"
+          plain
+          icon="el-icon-delete"
+          @click="delUserById(scope.row.id)"
+        ></el-button>
+        <el-button size="mini" type="success" plain icon="el-icon-check"
+          >分配角色</el-button
+        >
+      </template>
+    </el-table-column>
+  </el-table>
+
+  <!--
+      分页组件
+        background 设置分页组件背景色
+        layout="prev, pager, next" 分页组件结构
+        :total="1000" 总条数
+        :page-size="3" 每页条数（大小）
+        :current-page="10" 当前页
+    -->
+  <el-pagination
+    background
+    layout="prev, pager, next"
+    :total="total"
+    :page-size="pagesize"
+    :current-page="pagenum"
+    @current-change="changePage"
+  ></el-pagination>
+
+  <!--
+      添加用户对话框
+        el-dialog 对话框组件
+        title="收货地址" 对话框的标题
+        :visible.sync="dialogFormVisible" 控制对话框的展示和隐藏
+
+      .sync 修饰符
+        1 sync 单词：同步
+        2 作用：通过添加这个修饰符，可以实现在组件内部直接修改props
+        3 props 是只读的，子组件中无法直接修改 props 值的！！！
+        4 原理：通过子到父组件通讯机制来实现了 子组件 修改 父组件中的传递过来的 props 功能
+
+      当前实例中的 .sync 用处说明：
+        :visible.sync="dialogFormVisible"
+          visible属性是用来控制对话框的展示和隐藏的
+          dialogFormVisible数据是：父组件（Users组件）提供的
+          当有 .sync 修饰符的时候，就说明子组件可以直接修改父组件中的数据，因此，点击 对话框组件 的 x（关闭按钮），可以修改父组件中的数据，并且隐藏对话框。
+          但是，如果将去掉 .sync 修饰符，此时，子组件（对话框组件）就无法直接修改父组件中的控制对话框展示和隐藏的数据了，也就无法点击 x 关闭对话框了
+    -->
+  <el-dialog
+    title="添加用户"
+    :visible.sync="isShowUserAddDialog"
+    @close="hideUserAddDialog"
+  >
+    <el-form
+      :model="userAddForm"
+      :rules="rules"
+      label-width="100px"
+      ref="userAddFormRef"
+    >
+      <el-form-item label="用户名" prop="username">
+        <el-input v-model="userAddForm.username" autocomplete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input v-model="userAddForm.password" autocomplete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="邮箱" prop="email">
+        <el-input v-model="userAddForm.email" autocomplete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="手机" prop="mobile">
+        <el-input v-model="userAddForm.mobile" autocomplete="off"></el-input>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="isShowUserAddDialog = false">取 消</el-button>
+      <el-button type="primary" @click="addUser">确 定</el-button>
+    </div>
+  </el-dialog>
+
+  <!-- 编辑用户对话框 -->
+  <el-dialog title="编辑用户" :visible.sync="isShowUserEditDialog">
+    <el-form :model="userEditForm" label-width="100px">
+      <el-form-item label="用户名">
+        <el-tag type="info">{{ userEditForm.username }}</el-tag>
+      </el-form-item>
+      <el-form-item label="邮箱">
+        <el-input v-model="userEditForm.email" autocomplete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="手机">
+        <el-input v-model="userEditForm.mobile" autocomplete="off"></el-input>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="isShowUserEditDialog = false">取 消</el-button>
+      <el-button type="primary" @click="updateUser">确 定</el-button>
+    </div>
+  </el-dialog>
+</div>
