@@ -14,12 +14,19 @@ import 'element-ui/lib/theme-chalk/index.css'
 // 导入自己的样式
 import './assets/css/index.css'
 
+// 导入 element-tree-grid 表格列展开组件
+import ElementTreeGrid from 'element-tree-grid'
+
 // 导入axios
 import axios from 'axios'
 // 如何做到能够在任意组件中使用axios？
 // 方式：将axios添加到Vue原型中，那么，任意的实例中就可以直接通过 this 来直接获取到axios
 // 注意：对于不是 Vue 插件，但是还想在任意组件中使用的模块，都可以添加到 Vue 原型中
 Vue.prototype.$http = axios
+
+// 注册为全剧组件
+// console.log(ElementTreeGrid)
+Vue.component(ElementTreeGrid.name, ElementTreeGrid)
 
 // 配置基准路径：
 axios.defaults.baseURL = 'http://localhost:8888/api/private/v1'

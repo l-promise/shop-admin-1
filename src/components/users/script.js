@@ -5,6 +5,9 @@ export default {
   // 进入页面，发送请求，获取数据
   created () {
     this.getUserList()
+
+    // 获取所有角色列表数据
+    this.getRoleList()
   },
 
   data () {
@@ -72,6 +75,18 @@ export default {
 
         // 显示数据：
         username: ''
+      },
+
+      // 控制分配角色对话框的展示和隐藏
+      isShowRoleDialog: false,
+      // 角色列表数据
+      roleList: [],
+      // 给用户分配角色表单数据对象
+      roleForm: {
+        userName: '',
+        rid: -1,
+        // 暂存userId
+        userId: -1
       }
     }
   },
@@ -97,7 +112,7 @@ export default {
 
       // 使用 await 等待Promise结果
       const res = await this.$http.get(url, options)
-      console.log('用户列表数据：', res)
+      // console.log('用户列表数据：', res)
       if (res.data.meta.status === 200) {
         // 获取数据成功
         this.userList = res.data.data.users
@@ -287,6 +302,48 @@ export default {
         // 刷新列表数据
         this.getUserList(this.pagenum, this.searchText)
       }
+    },
+
+    // 展示分配角色对话框
+    showRoleDialog (curUser) {
+      this.isShowRoleDialog = true
+
+      const role = this.roleList.find(
+        item => item.roleName === curUser.role_name
+      )
+
+      // 注意：admin用户的角色是 超级管理员 ，这个角色不在角色列表中，所以，需要判断 role是否存在，如果存在就获取 role.id；如果不存在，就设置默认值 ''
+      const rid = role ? role.id : ''
+      // console.log(rid)
+
+      // 设置 用户名默认值和角色下拉框默认选中
+      this.roleForm.userName = curUser.username
+      this.roleForm.rid = rid
+      this.roleForm.userId = curUser.id
+    },
+
+    // 获取所有的角色列表数据
+    async getRoleList () {
+      const res = await this.$http.get('/roles')
+      this.roleList = res.data.data
+    },
+
+    // 给用户分配角色
+    async assignRole () {
+      const { userId, rid } = this.roleForm
+      const res = await this.$http.put(`/users/${userId}/role`, {
+        rid
+      })
+
+      // 1 关闭对话框
+      this.isShowRoleDialog = false
+      // 2 提示成功
+      this.$message({
+        type: 'success',
+        message: res.data.meta.msg
+      })
+      // 3 刷新列表数据
+      this.getUserList(this.pagenum, this.searchText)
     }
   }
 }

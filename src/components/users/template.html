@@ -89,9 +89,15 @@
           icon="el-icon-delete"
           @click="delUserById(scope.row.id)"
         ></el-button>
-        <el-button size="mini" type="success" plain icon="el-icon-check"
-          >分配角色</el-button
+        <el-button
+          size="mini"
+          type="success"
+          plain
+          icon="el-icon-check"
+          @click="showRoleDialog(scope.row)"
         >
+          分配角色
+        </el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -178,6 +184,43 @@
     <div slot="footer" class="dialog-footer">
       <el-button @click="isShowUserEditDialog = false">取 消</el-button>
       <el-button type="primary" @click="updateUser">确 定</el-button>
+    </div>
+  </el-dialog>
+
+  <!-- 分配角色对话框 -->
+  <el-dialog title="分配角色" :visible.sync="isShowRoleDialog">
+    <el-form :model="roleForm" label-width="100px">
+      <el-form-item label="用户名">
+        <el-tag type="info">{{ roleForm.userName }}</el-tag>
+      </el-form-item>
+      <el-form-item label="角色列表">
+        <!--
+          下拉框组件
+            v-model="form.region" 实现数据双向绑定，它的值就是 option 选项中 value 属性的值
+            placeholder="请选择角色" 占位符
+
+            el-option 组件： 下拉框的选项组件
+              label="区域一"    当前选项的名称，给用户看的
+              value="shanghai"  当前选项的值，给代码使用的，将来就要获取到当前这个value值
+
+            如何让 下拉框 组件默认选中？
+              因为 下拉框组件 已经通过 v-model 与一个数据实现了双向数据绑定
+              所以，只要修改 v-model 绑定的数据，就可以让 下拉框组件 默认选中了
+              并且，设置的值为 option组件 的 value属性值
+        -->
+        <el-select v-model="roleForm.rid" placeholder="请选择角色">
+          <el-option
+            v-for="role in roleList"
+            :key="role.id"
+            :label="role.roleName"
+            :value="role.id"
+          ></el-option>
+        </el-select>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="isShowRoleDialog = false">取 消</el-button>
+      <el-button type="primary" @click="assignRole"> 确 定 </el-button>
     </div>
   </el-dialog>
 </div>

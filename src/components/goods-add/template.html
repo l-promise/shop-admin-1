@@ -1,0 +1,104 @@
+<div class="goods-add">
+  <!--
+    步骤条组件：
+      :active="active"  设置高亮，是从 0 开始的索引号
+        当前值表示 该步骤 正在进行中
+      finish-status="success" 完成状态
+  -->
+  <el-steps :active="active" finish-status="success">
+    <el-step title="第一步" description="基本信息"></el-step>
+    <el-step title="第二步" description="商品图片"></el-step>
+    <el-step title="第三步" description="商品内容"></el-step>
+  </el-steps>
+
+  <!--
+    tabs 标签页组件：
+      tab-position="left" 设置标签页标签的位置
+      style="height: 200px;"
+      v-model="tabActive" 用来实现数据双向绑定，要让哪个菜单高亮，只需要设置为哪个菜单的 name 属性即可
+
+      el-tab-pane 组件：
+        label="用户管理" 标签文字
+  -->
+  <el-tabs v-model="tabActive" tab-position="left" @tab-click="tabChange">
+    <el-tab-pane label="基本信息" name="basic">
+      <el-form :model="goodsAddForm" label-width="80px">
+        <el-form-item label="商品名称">
+          <el-input v-model="goodsAddForm.goods_name"></el-input>
+        </el-form-item>
+        <el-form-item label="商品价格">
+          <el-input v-model="goodsAddForm.goods_price"></el-input>
+        </el-form-item>
+        <el-form-item label="商品重量">
+          <el-input v-model="goodsAddForm.goods_weight"></el-input>
+        </el-form-item>
+        <el-form-item label="商品数量">
+          <el-input v-model="goodsAddForm.goods_number"></el-input>
+        </el-form-item>
+        <el-form-item label="商品分类">
+          <el-cascader
+            :options="cateList"
+            v-model="goodsAddForm.goods_cat_add"
+            :props="{
+              label: 'cat_name',
+              value: 'cat_id'
+            }"
+          >
+          </el-cascader>
+        </el-form-item>
+        <el-form-item label="是否促销">
+          <el-radio v-model="goodsAddForm.is_promote" :label="true">
+            是
+          </el-radio>
+          <el-radio v-model="goodsAddForm.is_promote" :label="false">
+            否
+          </el-radio>
+        </el-form-item>
+      </el-form>
+      <el-button type="primary" @click="next(1, 'pic')">下一步</el-button>
+    </el-tab-pane>
+    <el-tab-pane label="商品图片" name="pic">
+      <!--
+        上传组件：
+          action="https://jsonplaceholder.typicode.com/posts/"
+            设置文件（图片）上传的接口路径
+          :on-preview="handlePreview"
+            图片预览事件
+          :on-remove="handleRemove"
+            图片移除事件
+          :file-list="fileList2"
+            文件列表
+          list-type="picture"
+            列表类型
+          :on-success="onSuccess"
+            图片上传成功时要执行的函数
+
+        文件上传组件是 element-ui 提供的组件，这个组件与 axios 没有任何关系。
+        所以，在 axios 中配置的 baseUrl、拦截器 等 对于该组件来说无效。
+        因此，需要单独为这个组件进行配置
+      -->
+      <el-upload
+        action="http://localhost:8888/api/private/v1/upload"
+        list-type="picture-card"
+        :headers="headers"
+        :on-success="onSuccess"
+      >
+        <el-button size="small" type="primary">点击上传</el-button>
+        <div slot="tip" class="el-upload__tip">
+          只能上传jpg/png文件，且不超过500kb
+        </div>
+      </el-upload>
+      <el-button class="btn" type="primary" @click="next(2, 'content')"
+        >下一步</el-button
+      >
+    </el-tab-pane>
+    <el-tab-pane label="商品内容" name="content">
+      <!-- 富文本编辑器 -->
+      <quill-editor v-model="goodsAddForm.goods_introduce"> </quill-editor>
+      <el-button class="btn" type="primary" @click="addGoods">确定</el-button>
+    </el-tab-pane>
+  </el-tabs>
+
+  <!-- <div v-html="htmlStr"></div>
+  <h2 class="test-html-2">这是组件中自己的内容</h2> -->
+</div>

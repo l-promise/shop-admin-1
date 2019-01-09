@@ -31,6 +31,7 @@
             text-color="#fff" 菜单文字颜色
             active-text-color="#ffd04b" 菜单高亮文字颜色
             :router="true" 启用Vue的路由模式，启用后，会以 index 值作为路由的哈希值
+            :unique-opened="true" 是否只保持一个子菜单的展开
 
           el-submenu 二级菜单，也就是一个可以展开收起的组件。
             这个组件可以嵌套，形成多级菜单
@@ -40,25 +41,37 @@
             disabled 表示禁用这个菜单
         -->
         <el-menu
-          default-active="4"
+          :default-active="activePath"
           background-color="#545c64"
           text-color="#fff"
           active-text-color="#ffd04b"
           :router="true"
+          :unique-opened="true"
         >
-          <el-submenu index="1">
+          <el-submenu :index=" level1.order + '' " v-for="level1 in menus" :key="level1.id">
             <!-- 一级菜单的图标和名称： -->
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>用户管理</span>
+              <span>{{ level1.authName }}</span>
             </template>
             <!-- 二级菜单： -->
-            <!-- 注意：此处没有添加 "/" 将来会有个bug -->
-            <el-menu-item index="users">
+            <!--
+              注意：此处没有添加 "/" 将来会有个bug
+
+              如果路由路由中不添加 / ，也就是：'users' 或 'goods'，那么在切换路由的时候会有bug。也就是说：当从 '/goods/4' 切换到 'users' 的时候，会变为： /goods/users
+              也就是只将哈希值中最后一部分替换了，这就出问题了。
+              如何解决？ 只要在指定路由的时候添加 '/' 就可以了。
+              添加后，再从 /goods/4 切换到 /users 的时候，整个 /goods/4 就会直接被替换为 /users，这样就解决了这个bug了
+            -->
+            <el-menu-item
+              :index="'/' + level2.path"
+              v-for="level2 in level1.children"
+              :key="level2.id"
+            >
               <!-- 二级菜单的图标和名称： -->
               <template slot="title">
                 <i class="el-icon-menu"></i>
-                <span>用户列表</span>
+                <span>{{ level2.authName }}</span>
               </template>
             </el-menu-item>
           </el-submenu>
@@ -75,7 +88,31 @@
 
 <script>
 export default {
+  data () {
+    return {
+      menus: []
+    }
+  },
+  created () {
+    console.log('路由对象：', this.$route)
+    this.getMenuList()
+  },
+
+  computed: {
+    // 获取需要高亮的哈希值
+    activePath () {
+      const { path } = this.$route
+      const pathArr = path.split('/')
+
+      return pathArr.length === 3 ? '/' + pathArr[1] : path
+    }
+  },
+
   methods: {
+    async getMenuList () {
+      const res = await this.$http.get('/menus')
+      this.menus = res.data.data
+    },
     // 退出功能
     async logout () {
       try {

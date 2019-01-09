@@ -9,6 +9,12 @@ import VueRouter from 'vue-router'
 import Login from '@/components/login/Login'
 import Home from '@/components/home/Home'
 import Users from '@/components/users/Users'
+import Roles from '@/components/roles/Roles'
+import Rights from '@/components/rights/Rights'
+import Categories from '@/components/categories/Categories'
+import Goods from '@/components/goods/Goods'
+import GoodsAdd from '@/components/goods-add/GoodsAdd'
+import NotFound from '@/components/404/NotFound'
 
 // 安装插件
 Vue.use(VueRouter)
@@ -16,6 +22,8 @@ Vue.use(VueRouter)
 // 创建路由实例，并导出
 const router = new VueRouter({
   routes: [
+    // 默认路由
+    { path: '/', redirect: '/home' },
     { path: '/login', component: Login, name: 'login' },
     {
       path: '/home',
@@ -30,8 +38,45 @@ const router = new VueRouter({
           // path: '/users',
           path: '/users',
           component: Users
+        },
+
+        {
+          path: '/roles',
+          component: Roles
+        },
+
+        {
+          path: '/rights',
+          component: Rights
+        },
+
+        {
+          path: '/categories',
+          component: Categories
+        },
+
+        {
+          // :page 表示路由参数
+          // :page? 表示路由参数为可选项，也就是说：可以传这个参数，也可以省略这个参数
+          // /goods/:page? 这个路由规则，可以匹配一下形式的哈希值：
+          //  /goods
+          //  /goods/8
+          path: '/goods/:page?',
+          component: Goods
+        },
+
+        {
+          path: '/goods-add',
+          component: GoodsAdd
         }
       ]
+    },
+
+    // 通配符，可以匹配所有的路径，因此，这个路由规则应该出现在最后！！！
+    // 优先匹配上述所有的路由规则，如果上面这些规则无法匹配，再匹配该路由
+    {
+      path: '*',
+      component: NotFound
     }
   ]
 })
